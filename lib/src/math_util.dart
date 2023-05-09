@@ -1,57 +1,42 @@
 import 'dart:math' as math;
+import 'package:flutter/widgets.dart';
 import 'package:xutil/src/list_util.dart';
 
-num? max(Iterable<num>? list) {
+num max(Iterable<num> list) {
   return maxBy<num>(list, (p0) => p0);
 }
 
-T? maxBy<T>(Iterable<T>? list, num? Function(T?) convert) {
-  if (list == null || list.isEmpty) {
-    return null;
+T maxBy<T>(Iterable<T> list, num Function(T) convert) {
+  if (list.isEmpty) {
+   throw FlutterError('列表为空');
   }
-  num? v;
-  T? result;
+  num v=convert.call(list.first);
+  T result=list.first;
   for (var v2 in list) {
     var tv = convert.call(v2);
-    if (result == null) {
+    if(tv.compareTo(v)>0){
       v = tv;
       result = v2;
-    } else {
-      if (tv == null) {
-        continue;
-      }
-      if (v == null || tv.compareTo(v) > 0) {
-        v = tv;
-        result = v2;
-      }
     }
   }
-  return result;
+  return result!;
 }
 
-num? min(Iterable<num>? list) {
+num min(Iterable<num> list) {
   return minBy<num>(list, (p0) => p0);
 }
 
-T? minBy<T>(Iterable<T>? list, num? Function(T?) convert) {
-  if (list == null || list.isEmpty) {
-    return null;
+T minBy<T>(Iterable<T> list, num Function(T) convert) {
+  if ( list.isEmpty) {
+    throw FlutterError('List Is Empty');
   }
-  num? v;
-  T? result;
+  num v=convert.call(list.first);
+  T result=list.first;
   for (var v2 in list) {
     var tv = convert.call(v2);
-    if (result == null) {
+    if(tv.compareTo(v)<0){
       v = tv;
       result = v2;
-    } else {
-      if (tv == null) {
-        continue;
-      }
-      if (v == null || tv.compareTo(v) < 0) {
-        v = tv;
-        result = v2;
-      }
     }
   }
   return result;
@@ -82,10 +67,10 @@ num sumBy<T>(Iterable<T> list, num Function(T) call) {
 }
 
 num ave(Iterable<num> list) {
-  return aveBuy<num>(list, (p0) => p0);
+  return aveBy<num>(list, (p0) => p0);
 }
 
-num aveBuy<T>(Iterable<T> list, num Function(T) call) {
+num aveBy<T>(Iterable<T> list, num Function(T) call) {
   if (list.isEmpty) {
     return 0;
   }
