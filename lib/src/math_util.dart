@@ -57,7 +57,7 @@ T? minBy<T>(Iterable<T>? list, num? Function(T?) convert) {
   return result;
 }
 
-List<num> range<T>(Iterable<T> list, num Function(T) call) {
+List<num> extremes<T>(Iterable<T> list, num Function(T) call) {
   if (list.isEmpty) {
     return [0, 0];
   }
