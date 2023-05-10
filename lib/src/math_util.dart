@@ -1,6 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/widgets.dart';
-import 'package:xutil/src/list_util.dart';
+import 'package:chart_xutil/src/list_util.dart';
 
 num max(Iterable<num> list) {
   return maxBy<num>(list, (p0) => p0);

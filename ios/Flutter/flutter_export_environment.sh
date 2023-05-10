@@ -3,6 +3,7 @@
 export "FLUTTER_ROOT=/Users/wzp/Develop/FlutterSDK/flutter"
 export "FLUTTER_APPLICATION_PATH=/Users/wzp/Develop/FlutterProject/chart/xutil"
 export "COCOAPODS_PARALLEL_CODE_SIGN=true"
+export "FLUTTER_TARGET=lib/main.dart"
 export "FLUTTER_BUILD_DIR=build"
 export "FLUTTER_BUILD_NAME=1.0.0"
 export "FLUTTER_BUILD_NUMBER=1.0.0"

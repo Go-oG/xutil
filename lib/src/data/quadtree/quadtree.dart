@@ -1,7 +1,7 @@
 import 'dart:math';
 import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
-import 'package:xutil/src/js_util.dart';
+import 'package:chart_xutil/src/js_util.dart';
 import 'quad_node.dart';
 typedef VisitCallback<T> = bool Function(QuadNode<T>, num, num, num, num);
 

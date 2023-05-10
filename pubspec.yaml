@@ -1,6 +1,6 @@
-name: xutil
-description: A new Flutter project.
-version: 0.0.1
+name: chart_xutil
+description: A simple util package.
+version: 1.0.0
 homepage: 'https://github.com/Go-oG/xutil'
 
 environment:
