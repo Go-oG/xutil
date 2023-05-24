@@ -313,7 +313,7 @@ class TreeNode<T extends TreeNode<T>> {
     return nodes;
   }
 
-  T sort(int Function(T,T) compare, [bool iterator = true]) {
+  T sort(int Function(T, T) compare, [bool iterator = true]) {
     if (iterator) {
       return eachBefore((T node, b, c) {
         if (node.hasChild) {
@@ -356,7 +356,7 @@ class TreeNode<T extends TreeNode<T>> {
     List<T> children = [];
     T node = this as T;
     while ((children = node.children).isNotEmpty) {
-      node = children[children.length-1];
+      node = children[children.length - 1];
     }
     return node;
   }
@@ -464,7 +464,6 @@ class TreeNode<T extends TreeNode<T>> {
   bool get expand => _expand;
 
   bool get isLeaf => childCount <= 0;
-
 }
 
 T toTree<D, T extends TreeNode<T>>(

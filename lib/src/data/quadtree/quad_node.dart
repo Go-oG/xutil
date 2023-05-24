@@ -47,5 +47,8 @@ class QuadNode<T> with ExtProps {
     return _childList![index];
   }
 
-  bool get lengthBool => _childList != null && _childList!.isNotEmpty;
+  int get childCount=>_childList?.length??0;
+
+  bool get hasChild => _childList != null && _childList!.isNotEmpty;
+
 }

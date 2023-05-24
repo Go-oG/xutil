@@ -1,6 +1,6 @@
 name: chart_xutil
 description: A simple util package.
-version: 1.0.0
+version: 1.0.1
 homepage: 'https://github.com/Go-oG/xutil'
 
 environment:
