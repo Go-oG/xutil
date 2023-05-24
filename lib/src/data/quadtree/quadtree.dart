@@ -251,7 +251,7 @@ class QuadTree<T> {
   ///返回离给定搜索半径的位置⟨x,y⟩最近的基准点。
   ///如果没有指定半径，默认为无穷大。
   ///如果在搜索范围内没有基准点，则返回未定义
-  T? find(int x, int y, double? radius) {
+  T? find(int x, int y, [double? r]) {
     T? data;
     num x0 = _x0;
     num y0 = _y0;
@@ -266,14 +266,15 @@ class QuadTree<T> {
       quads.add(InnerQuad(node, x0, y0, x3, y3));
     }
 
-    if (radius == null) {
+    double radius;
+    if (r == null) {
       radius = double.infinity;
     } else {
-      x0 = (x - radius);
-      y0 = (y - radius);
-      x3 = (x + radius);
-      y3 = (y + radius);
-      radius *= radius;
+      x0 = (x - r);
+      y0 = (y - r);
+      x3 = (x + r);
+      y3 = (y + r);
+      radius = r * r;
     }
 
     InnerQuad q;
@@ -300,9 +301,9 @@ class QuadTree<T> {
         }
       } else {
         // 访问此点（不需要访问重合点！）
-        var dx = x - node.data!.data._dx, dy = y - node.data!.data._dy;
+        var dx = x - xFun(node.data), dy = y - yFun(node.data);
         double d2 = (dx * dx + dy * dy).toDouble();
-        if (d2 < radius!) {
+        if (d2 < radius) {
           radius = d2;
           var d = sqrt(radius);
           x0 = x - d;
