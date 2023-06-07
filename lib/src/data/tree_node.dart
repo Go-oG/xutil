@@ -390,7 +390,22 @@ class TreeNode<T extends TreeNode<T>> {
     } while (tmp != null && (tmp._height < ++h));
   }
 
-  int computeMaxDeep() {
+  void computeDeep(T node, [int initDeep = 0]) {
+    int d = initDeep;
+    List<T> nl = [node];
+    List<T> next = [];
+    while (nl.isNotEmpty) {
+      for (var c in nl) {
+        c._deep = d;
+        next.addAll(c.children);
+      }
+      d++;
+      nl = next;
+      next = [];
+    }
+  }
+
+  int findMaxDeep() {
     int i = 0;
     leaves().forEach((element) {
       i = max(i, element.deep);

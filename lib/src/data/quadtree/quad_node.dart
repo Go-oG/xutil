@@ -1,31 +1,27 @@
-
 import 'package:flutter/widgets.dart';
 
 import '../mixin_props.dart';
 
-/// 叶子节点和 innerNode 的统一封装
+/// 叶子节点和 父节点 的统一封装
 ///节点的属性在创建时就已经被确定了
 class QuadNode<T> with ExtProps {
   ///作为left节点时使用的属性
-  T? data;
-  QuadNode<T>? next; // 下一个节点
+  final T? data;
+  // 下一个节点(存在相同的点)
+  QuadNode<T>? next;
 
-  ///当该对象类型为internal时 则存在下列属性
-  List<QuadNode<T>?>? _childList;
+  ///当该对象类型为父节点时 则存在下列属性
+  final Map<int, QuadNode<T>> _childMap = {};
 
-  QuadNode({int length = -1, T? data}) {
+  QuadNode({int length = -1, this.data}) {
     if (length != 4 && data == null) {
       throw FlutterError('创建时必须选一个');
     }
     if (length == 4 && data != null) {
       throw FlutterError('只能选一个');
     }
-    if (length == 4) {
-      this.data = null;
-      _childList = List.filled(4, null, growable: true);
-    } else {
-      _childList?.clear();
-      this.data = data;
+    if (length != 4) {
+      _childMap.clear();
     }
   }
 
@@ -33,22 +29,23 @@ class QuadNode<T> with ExtProps {
     if (index < 0 || index >= 4) {
       throw FlutterError('违法参数：只能传入0-3');
     }
-    _childList![index] = node;
+    if (node != null) {
+      _childMap[index] = node;
+    }
   }
 
   void delete(int index) {
-    _childList!.removeAt(index);
+    _childMap.remove(index);
   }
 
   QuadNode<T>? operator [](int index) {
     if (index < 0 || index >= 4) {
       throw FlutterError('违法参数：只能传入0-3');
     }
-    return _childList![index];
+    return _childMap[index];
   }
 
-  int get childCount=>_childList?.length??0;
+  int get childCount => data == null ? _childMap.length : 0;
 
-  bool get hasChild => _childList != null && _childList!.isNotEmpty;
-
+  bool get hasChild => data == null ? _childMap.isNotEmpty : false;
 }

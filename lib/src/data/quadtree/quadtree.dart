@@ -179,7 +179,7 @@ class QuadTree<T> {
       x1 = (x0 = x.floor()) + 1;
       y1 = (y0 = y.floor()) + 1;
     } else {
-      // 否则，重复重复覆盖
+      // 否则，重复覆盖
       num z = (x1 - x0) == 0 ? 1 : (x1 - x0);
       QuadNode<T>? node = _root;
       QuadNode<T>? parent;
@@ -277,21 +277,28 @@ class QuadTree<T> {
       radius = r * r;
     }
 
-    InnerQuad q;
     while (quads.isNotEmpty) {
-      q = quads.removeLast();
+      InnerQuad q = quads.removeLast();
       // 如果此象限不能包含更近的节点，请停止搜索
-      if ((node = q.node) == null || (x1 = q.x0) > x3 || (y1 = q.y0) > y3 || (x2 = q.x1) < x0 || (y2 = q.y1) < y0) {
+      node = q.node;
+      if (node == null || (x1 = q.x0) > x3 || (y1 = q.y0) > y3 || (x2 = q.x1) < x0 || (y2 = q.y1) < y0) {
         continue;
       }
-
       //将当前象限一分为二.
       if (node.hasChild) {
         int xm = ((x1 + x2) / 2).round(), ym = ((y1 + y2) / 2).round();
-        quads.add(InnerQuad(node[3]!, xm, ym, x2, y2));
-        quads.add(InnerQuad(node[2]!, x1, ym, xm, y2));
-        quads.add(InnerQuad(node[1]!, xm, y1, x2, ym));
-        quads.add(InnerQuad(node[0]!, x1, y1, xm, ym));
+        if (node[3] != null) {
+          quads.add(InnerQuad(node[3]!, xm, ym, x2, y2));
+        }
+        if (node[2] != null) {
+          quads.add(InnerQuad(node[2]!, x1, ym, xm, y2));
+        }
+        if (node[1] != null) {
+          quads.add(InnerQuad(node[1]!, xm, y1, x2, ym));
+        }
+        if (node[0] != null) {
+          quads.add(InnerQuad(node[0]!, x1, y1, xm, ym));
+        }
 
         //首先访问最近的象限
         if ((i = _toInt(y >= ym) << 1 | _toInt(x >= xm)) != 0) {
@@ -302,7 +309,7 @@ class QuadTree<T> {
       } else {
         // 访问此点（不需要访问重合点！）
         var dx = x - xFun(node.data), dy = y - yFun(node.data);
-        double d2 = (dx * dx + dy * dy).toDouble();
+        double d2 = (dx * dx + dy * dy);
         if (d2 < radius) {
           radius = d2;
           var d = sqrt(radius);
@@ -463,7 +470,7 @@ class QuadTree<T> {
 
     while (quads.isNotEmpty) {
       q = quads.removeLast();
-      QuadNode<T> node = q.node;
+      QuadNode<T>? node = q.node;
       if (node.hasChild) {
         num x0 = q.x0, y0 = q.y0, x1 = q.x1, y1 = q.y1;
         num xm = ((x0 + x1) / 2);
@@ -562,6 +569,6 @@ class InnerQuad<T> {
   InnerQuad(this.node, this.x0, this.y0, this.x1, this.y1);
 }
 
-typedef VisitCallback<T> = bool Function(QuadNode<T>, num, num, num, num);
+typedef VisitCallback<T> = bool Function(QuadNode<T> node, num left, num top, num right, num bottom);
 
-typedef OffsetFun<T> = double Function(T);
+typedef OffsetFun<T> = double Function(T data);
