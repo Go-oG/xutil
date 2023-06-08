@@ -27,7 +27,6 @@ class TreeNode<T extends TreeNode<T>> {
   int _height = 0;
 
   bool _expand = true; //是否展开
-
   bool select = false; //是否被选中
 
   TreeNode(this.parent, {this.maxDeep = -1, int deep = 0, num value = 0}) {
@@ -250,6 +249,10 @@ class TreeNode<T extends TreeNode<T>> {
         return node;
       }
     }
+    if (callback.call(this as T, -1, this as T)) {
+      return this as T;
+    }
+
     return null;
   }
 
@@ -381,7 +384,13 @@ class TreeNode<T extends TreeNode<T>> {
   }
 
   /// 计算树的高度
-  void computeHeight(T node, [int initHeight = 0]) {
+  void computeHeight([int initHeight = 0]) {
+    for (var leaf in leaves()) {
+      _computeHeightInner(leaf, initHeight);
+    }
+  }
+
+  void _computeHeightInner(T node, [int initHeight = 0]) {
     T? tmp = node;
     int h = initHeight;
     do {
@@ -390,18 +399,22 @@ class TreeNode<T extends TreeNode<T>> {
     } while (tmp != null && (tmp._height < ++h));
   }
 
-  void computeDeep(T node, [int initDeep = 0]) {
-    int d = initDeep;
-    List<T> nl = [node];
-    List<T> next = [];
-    while (nl.isNotEmpty) {
-      for (var c in nl) {
-        c._deep = d;
-        next.addAll(c.children);
+  ///重新设置深度
+  void resetDeep(int deep, [bool iterator = true]) {
+    this._deep = deep;
+    if (iterator) {
+      for (var node in _childrenList) {
+        node.resetDeep(deep + 1, iterator);
       }
-      d++;
-      nl = next;
-      next = [];
+    }
+  }
+
+  void resetHeight(int height, [bool iterator = true]) {
+    this._height = height;
+    if (iterator) {
+      for (var node in _childrenList) {
+        node.resetDeep(height - 1, iterator);
+      }
     }
   }
 
@@ -413,15 +426,93 @@ class TreeNode<T extends TreeNode<T>> {
     return i;
   }
 
-  ///重设深度
-  void resetDeep(int deep, [bool iterator = true]) {
-    this._deep = deep;
-    if (iterator) {
-      for (var node in _childrenList) {
-        node.resetDeep(deep + 1, iterator);
+  //=======坐标相关的操作========
+
+  ///节点中心位置和其大小
+  num x = 0;
+  num y = 0;
+  Size size = Size.zero;
+
+  ///找到一个节点是否在[offset]范围内
+  T? findNodeByOffset(Offset offset, [bool useRadius = true, bool shordSide = true]) {
+    return find((node, index, startNode) {
+      if (useRadius) {
+        double r = (shordSide ? size.shortestSide : size.longestSide) / 2;
+        r *= r;
+        double a = (offset.dx - x).abs();
+        double b = (offset.dy - y).abs();
+        return (a * a + b * b) <= r;
+      } else {
+        return position.contains(offset);
       }
-    }
+    });
   }
+
+  void translate(num dx, num dy) {
+    this.each((node, index, startNode) {
+      node.x += dx;
+      node.y += dy;
+      return false;
+    });
+  }
+
+  void right2Left() {
+    Rect bound = getBoundBox();
+    this.each((node, index, startNode) {
+      node.x = node.x - (node.x - bound.left) * 2;
+      return false;
+    });
+  }
+
+  void bottom2Top() {
+    Rect bound = getBoundBox();
+    this.each((node, index, startNode) {
+      node.y = node.y - (node.y - bound.top) * 2;
+      return false;
+    });
+  }
+
+  ///获取包围整个树的巨星
+  Rect getBoundBox() {
+    num left = x;
+    num right = x;
+    num top = y;
+    num bottom = y;
+    this.each((node, index, startNode) {
+      left = min(left, node.x);
+      top = min(top, node.y);
+      right = max(right, node.x);
+      bottom = max(bottom, node.y);
+      return false;
+    });
+    return Rect.fromLTRB(left.toDouble(), top.toDouble(), right.toDouble(), bottom.toDouble());
+  }
+
+  Offset get center {
+    return Offset(x.toDouble(), y.toDouble());
+  }
+
+  set center(Offset offset) {
+    x = offset.dx;
+    y = offset.dy;
+  }
+
+  Rect get position => Rect.fromCenter(center: center, width: size.width, height: size.height);
+
+  set position(Rect rect) {
+    Offset center = rect.center;
+    x = center.dx;
+    y = center.dy;
+    size = rect.size;
+  }
+
+  double get left => x - size.width / 2;
+
+  double get top => y - size.height / 2;
+
+  double get right => x + size.width / 2;
+
+  double get bottom => y + size.height / 2;
 
   ///从复制当前节点及其后代
   ///复制后的节点没有parent
@@ -444,22 +535,6 @@ class TreeNode<T extends TreeNode<T>> {
     return node;
   }
 
-  ///返回 节点 a,b的最小公共祖先
-  static T? minCommonAncestor<T extends TreeNode<T>>(T a, T b) {
-    if (a == b) return a;
-    var aNodes = a.ancestors();
-    var bNodes = b.ancestors();
-    T? c;
-    a = aNodes.removeLast();
-    b = bNodes.removeLast();
-    while (a == b) {
-      c = a;
-      a = aNodes.removeLast();
-      b = bNodes.removeLast();
-    }
-    return c;
-  }
-
   set expand(bool b) {
     _expand = b;
     for (var element in _childrenList) {
@@ -479,6 +554,22 @@ class TreeNode<T extends TreeNode<T>> {
   bool get expand => _expand;
 
   bool get isLeaf => childCount <= 0;
+
+  ///返回 节点 a,b的最小公共祖先
+  static T? minCommonAncestor<T extends TreeNode<T>>(T a, T b) {
+    if (a == b) return a;
+    var aNodes = a.ancestors();
+    var bNodes = b.ancestors();
+    T? c;
+    a = aNodes.removeLast();
+    b = bNodes.removeLast();
+    while (a == b) {
+      c = a;
+      a = aNodes.removeLast();
+      b = bNodes.removeLast();
+    }
+    return c;
+  }
 }
 
 T toTree<D, T extends TreeNode<T>>(

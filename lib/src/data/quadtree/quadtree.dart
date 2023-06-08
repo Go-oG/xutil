@@ -248,7 +248,7 @@ class QuadTree<T> {
 
   Rect get boundRect => Rect.fromLTRB(_x0.toDouble(), _y0.toDouble(), _x1.toDouble(), _y1.toDouble());
 
-  ///返回离给定搜索半径的位置⟨x,y⟩最近的基准点。
+  ///返回离给定搜索半径的位置⟨x,y⟩最近的点。
   ///如果没有指定半径，默认为无穷大。
   ///如果在搜索范围内没有基准点，则返回未定义
   T? find(int x, int y, [double? r]) {
