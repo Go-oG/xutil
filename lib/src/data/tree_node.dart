@@ -242,18 +242,26 @@ class TreeNode<T extends TreeNode<T>> {
   }
 
   ///在子节点中查找对应节点
-  T? find(TreeFun<T> callback) {
+  T? findInChildren(TreeFun<T> callback) {
     int index = -1;
     for (T node in _childrenList) {
       if (callback.call(node, ++index, this as T)) {
         return node;
       }
     }
-    if (callback.call(this as T, -1, this as T)) {
-      return this as T;
-    }
-
     return null;
+  }
+
+  T? find(TreeFun<T> callback) {
+    T? result;
+    each((node, index, startNode) {
+      if (callback.call(node, index, this as T)) {
+        result = node;
+        return true;
+      }
+      return false;
+    });
+    return result;
   }
 
   /// 从当前节点开始查找深度等于给定深度的节点
@@ -435,15 +443,15 @@ class TreeNode<T extends TreeNode<T>> {
 
   ///找到一个节点是否在[offset]范围内
   T? findNodeByOffset(Offset offset, [bool useRadius = true, bool shordSide = true]) {
+    double r = (shordSide ? size.shortestSide : size.longestSide) / 2;
+    r *= r;
     return find((node, index, startNode) {
       if (useRadius) {
-        double r = (shordSide ? size.shortestSide : size.longestSide) / 2;
-        r *= r;
-        double a = (offset.dx - x).abs();
-        double b = (offset.dy - y).abs();
+        double a = (offset.dx - node.x).abs();
+        double b = (offset.dy - node.y).abs();
         return (a * a + b * b) <= r;
       } else {
-        return position.contains(offset);
+        return node.position.contains(offset);
       }
     });
   }
