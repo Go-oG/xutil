@@ -9,7 +9,7 @@ void main() {
   root.add(c2);
   TestNode c3 = TestNode(c2, value: 3);
   c2.add(c3);
-  root.resetDeep(0);
+  root.setDeep(0);
 
 
   root.each((node, index, startNode) {

@@ -121,6 +121,9 @@ class TreeNode<T extends TreeNode<T>> {
   }
 
   void add(T node) {
+    if (node.parent != null && node.parent != this) {
+      throw FlutterError('当前要添加的节点其父节点不为空');
+    }
     node.parent = this as T;
     _childrenList.add(node);
   }
@@ -206,11 +209,7 @@ class TreeNode<T extends TreeNode<T>> {
         break;
       }
       children = node._childrenList;
-      if (children.isNotEmpty) {
-        for (int i = children.length - 1; i >= 0; --i) {
-          nodes.add(children[i]);
-        }
-      }
+      nodes.addAll(children.reversed);
     }
     return this as T;
   }
@@ -225,12 +224,7 @@ class TreeNode<T extends TreeNode<T>> {
       T node = nodes.removeAt(nodes.length - 1);
       next.add(node);
       children = node._childrenList;
-      if (children.isNotEmpty) {
-        int n = children.length;
-        for (int i = 0; i < n; ++i) {
-          nodes.add(children[i]);
-        }
-      }
+      nodes.addAll(children);
     }
     while (next.isNotEmpty) {
       TreeNode node = next.removeAt(next.length - 1);
@@ -393,35 +387,41 @@ class TreeNode<T extends TreeNode<T>> {
 
   /// 计算树的高度
   void computeHeight([int initHeight = 0]) {
-    for (var leaf in leaves()) {
-      _computeHeightInner(leaf, initHeight);
+    List<List<T>> levelList=[];
+    List<T> tmp = [this as T];
+    List<T> next = [];
+    while (tmp.isNotEmpty) {
+      levelList.add(tmp);
+      next=[];
+     for(var c in tmp){
+       next.addAll(c.children);
+     }
+      tmp=next;
+    }
+    int c=levelList.length;
+    for(int i=0;i<c;i++){
+     for (var node in levelList[i]) {
+       node._height=c-i-1;
+     }
     }
   }
 
-  void _computeHeightInner(T node, [int initHeight = 0]) {
-    T? tmp = node;
-    int h = initHeight;
-    do {
-      tmp!._height = h;
-      tmp = tmp.parent;
-    } while (tmp != null && (tmp._height < ++h));
-  }
-
-  ///重新设置深度
-  void resetDeep(int deep, [bool iterator = true]) {
+  ///设置深度
+  void setDeep(int deep, [bool iterator = true]) {
     this._deep = deep;
     if (iterator) {
       for (var node in _childrenList) {
-        node.resetDeep(deep + 1, iterator);
+        node.setDeep(deep + 1, true);
       }
     }
   }
 
-  void resetHeight(int height, [bool iterator = true]) {
+  //设置树高度
+  void setHeight(int height, [bool iterator = true]) {
     this._height = height;
     if (iterator) {
       for (var node in _childrenList) {
-        node.resetDeep(height - 1, iterator);
+        node.setHeight(height - 1, true);
       }
     }
   }
@@ -538,7 +538,7 @@ class TreeNode<T extends TreeNode<T>> {
     node._expand = _expand;
     node.select = select;
     for (var ele in _childrenList) {
-      node._childrenList.add(ele._innerCopy(build, node, deep + 1));
+      node.add(ele._innerCopy(build, node, deep + 1));
     }
     return node;
   }
@@ -580,14 +580,13 @@ class TreeNode<T extends TreeNode<T>> {
   }
 }
 
-T toTree<D, T extends TreeNode<T>>(
-  D data,
-  List<D> Function(D) childrenCallback,
-  T Function(T?, D) build, {
-  int deep = 0,
-  T? parent,
-  int Function(T, T)? sort,
-}) {
+T toTree<D, T extends TreeNode<T>>(D data,
+    List<D> Function(D) childrenCallback,
+    T Function(T?, D) build, {
+      int deep = 0,
+      T? parent,
+      int Function(T, T)? sort,
+    }) {
   T root = build.call(parent, data);
   root._deep = deep;
   root.parent = parent;
